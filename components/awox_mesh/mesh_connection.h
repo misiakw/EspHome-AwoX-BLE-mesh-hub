@@ -8,14 +8,15 @@
 #include "esphome/core/log.h"
 #include "esphome/components/esp32_ble_client/ble_client_base.h"
 #include "esphome/components/esp32_ble_tracker/esp32_ble_tracker.h"
-#include "esphome/components/mqtt/mqtt_client.h"
+//#include "esphome/components/mqtt/mqtt_client.h"
 #include "device_info.h"
 #include "device.h"
+#include "esp_random.h"
 
 namespace esphome {
 namespace awox_mesh {
 
-using namespace esphome::mqtt;
+//using namespace esphome::mqtt;
 
 /** UUID for Bluetooth GATT information service */
 static std::string uuid_info_service = "00010203-0405-0607-0809-0a0b0c0d1910";

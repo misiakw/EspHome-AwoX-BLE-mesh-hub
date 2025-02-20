@@ -27,9 +27,9 @@ class AwoxMeshMqtt {
 
   std::string get_mqtt_topic_for_(MeshDestination *mesh_destination, const std::string &suffix) const;
 
-  std::string get_discovery_topic_(const esphome::mqtt::MQTTDiscoveryInfo &discovery_info, Device *device) const;
+  //std::string get_discovery_topic_(const esphome::mqtt::MQTTDiscoveryInfo &discovery_info, Device *device) const;
 
-  void process_incomming_command(MeshDestination *mesh_destination, JsonObject root);
+  //void process_incomming_command(MeshDestination *mesh_destination, JsonObject root);
 
  public:
   AwoxMeshMqtt(AwoxMesh *mesh) { this->mesh_ = mesh; }

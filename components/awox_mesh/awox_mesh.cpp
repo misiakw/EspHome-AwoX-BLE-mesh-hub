@@ -97,11 +97,11 @@ bool AwoxMesh::parse_device(const esp32_ble_tracker::ESPBTDevice &device) {
 void AwoxMesh::setup() {
   Component::setup();
 
-  this->publish_connection->setup();
+  //this->publish_connection->setup();
 
-  this->publish_connection->publish_connection_sensor_discovery(this->connections_);
+  //this->publish_connection->publish_connection_sensor_discovery(this->connections_);
 
-  this->set_interval("publish_connection", 5000, [this]() { this->publish_connected(); });
+  //this->set_interval("publish_connection", 5000, [this]() { this->publish_connected(); });
 }
 
 bool AwoxMesh::start_up_delay_done() {
@@ -406,7 +406,7 @@ void AwoxMesh::publish_connected() {
   linked_mesh_ids.erase(unique(linked_mesh_ids.begin(), linked_mesh_ids.end()), linked_mesh_ids.end());
   online_devices = linked_mesh_ids.size();
 
-  this->publish_connection->publish_connected(active_connections, online_devices, this->connections_);
+  //this->publish_connection->publish_connected(active_connections, online_devices, this->connections_);
 }
 
 void AwoxMesh::publish_availability(Device *device, bool delayed) {
@@ -421,10 +421,10 @@ void AwoxMesh::publish_availability(Device *device, bool delayed) {
     return;
   }
 
-  this->publish_connection->publish_availability(device);
+  //this->publish_connection->publish_availability(device);
 
   for (Group *group : device->get_groups()) {
-    this->publish_connection->publish_availability(group);
+    //this->publish_connection->publish_availability(group);
   }
 }
 
@@ -531,7 +531,7 @@ void AwoxMesh::sync_and_publish_group_state(Group *group) {
 
 void AwoxMesh::publish_state(MeshDestination *mesh_destination) {
   ESP_LOGV(TAG, "Publish: %s", mesh_destination->state_as_string().c_str());
-  this->publish_connection->publish_state(mesh_destination);
+  //this->publish_connection->publish_state(mesh_destination);
 
   for (Group *group : mesh_destination->get_groups()) {
     this->sync_and_publish_group_state(group);
@@ -548,7 +548,7 @@ void AwoxMesh::send_discovery(Device *device) {
   device->device_info = this->device_info_resolver->get_by_product_id(device->product_id);
   device->send_discovery = true;
 
-  this->publish_connection->send_discovery(device);
+  //this->publish_connection->send_discovery(device);
 }
 
 void AwoxMesh::send_group_discovery(Group *group) {
@@ -560,7 +560,7 @@ void AwoxMesh::send_group_discovery(Group *group) {
 
   group->send_discovery = true;
 
-  this->publish_connection->send_group_discovery(group);
+  //this->publish_connection->send_group_discovery(group);
 }
 
 void AwoxMesh::call_connection(int dest, std::function<void(MeshConnection *)> &&callback) {

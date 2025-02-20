@@ -12,7 +12,7 @@
 #include "esphome/core/component.h"
 #include "esphome/core/defines.h"
 
-#include "awox_mesh_mqtt.h"
+//#include "awox_mesh_mqtt.h"
 #include "mesh_destination.h"
 #include "mesh_connection.h"
 #include "device.h"
@@ -57,7 +57,7 @@ class AwoxMesh : public esp32_ble_tracker::ESPBTDeviceListener, public Component
 
   std::string address_prefix = "A4:C1";
 
-  AwoxMeshMqtt *publish_connection;
+  //AwoxMeshMqtt *publish_connection;
 
   DeviceInfoResolver *device_info_resolver = new DeviceInfoResolver();
 
@@ -111,7 +111,7 @@ class AwoxMesh : public esp32_ble_tracker::ESPBTDeviceListener, public Component
 
   AwoxMesh() {
     this->start = esphome::millis();
-    this->publish_connection = new AwoxMeshMqtt(this);
+    //this->publish_connection = new AwoxMeshMqtt(this);
   }
 
   bool parse_device(const esp32_ble_tracker::ESPBTDevice &device) override;

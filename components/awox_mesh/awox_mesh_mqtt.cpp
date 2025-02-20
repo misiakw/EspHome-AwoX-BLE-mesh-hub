@@ -6,8 +6,8 @@
 #include <math.h>
 #include <regex>
 
-#include "esphome/components/mqtt/mqtt_const.h"
-#include "esphome/components/mqtt/mqtt_component.h"
+//#include "esphome/components/mqtt/mqtt_const.h"
+//#include "esphome/components/mqtt/mqtt_component.h"
 #include "esphome/core/application.h"
 #include "esphome/core/log.h"
 
@@ -34,24 +34,25 @@ static std::string get_product_code_as_hex_string(int product_id) {
 
 void AwoxMeshMqtt::setup() {
   // Use retained MQTT messages to publish a default offline status for all devices
-  global_mqtt_client->subscribe(
-      global_mqtt_client->get_topic_prefix() + "/#", [this](const std::string &topic, const std::string &payload) {
-        if (std::regex_match(topic, std::regex(global_mqtt_client->get_topic_prefix() + "/[0-9]+/availability"))) {
-          ESP_LOGD(TAG, "Received topic: %s, %s", topic.c_str(), payload.c_str());
-          if (payload == "online") {
-            global_mqtt_client->publish(topic.c_str(), "offline");
-          }
-        }
-      });
+  //global_mqtt_client->subscribe(
+  //    global_mqtt_client->get_topic_prefix() + "/#", [this](const std::string &topic, const std::string &payload) {
+  //      if (std::regex_match(topic, std::regex(global_mqtt_client->get_topic_prefix() + "/[0-9]+/availability"))) {
+  //        ESP_LOGD(TAG, "Received topic: %s, %s", topic.c_str(), payload.c_str());
+  //        if (payload == "online") {
+  //          global_mqtt_client->publish(topic.c_str(), "offline");
+  //        }
+  //      }
+  //    });
 }
 
-std::string AwoxMeshMqtt::get_discovery_topic_(const MQTTDiscoveryInfo &discovery_info, Device *device) const {
+/*std::string AwoxMeshMqtt::get_discovery_topic_(const MQTTDiscoveryInfo &discovery_info, Device *device) const {
   return discovery_info.prefix + "/" + device->device_info->get_component_type() + "/awox-" +
          device->address_str_hex_only() + "/config";
-}
+}*/
 
 std::string AwoxMeshMqtt::get_mqtt_topic_for_(MeshDestination *mesh_destination, const std::string &suffix) const {
-  return global_mqtt_client->get_topic_prefix() + "/" + std::to_string(mesh_destination->dest()) + "/" + suffix;
+  //return global_mqtt_client->get_topic_prefix() + "/" + std::to_string(mesh_destination->dest()) + "/" + suffix;
+  return "prefix/" + std::to_string(mesh_destination->dest()) + "/" + suffix;
 }
 
 void AwoxMeshMqtt::publish_connected(int active_connections, int online_devices,
@@ -59,7 +60,7 @@ void AwoxMeshMqtt::publish_connected(int active_connections, int online_devices,
   if (!this->published_connected) {
     // todo.... find proper solution
     // stop_listening_for_availability
-    global_mqtt_client->unsubscribe(global_mqtt_client->get_topic_prefix() + "/#");
+    //global_mqtt_client->unsubscribe(global_mqtt_client->get_topic_prefix() + "/#");
     this->published_connected = true;
   }
 
@@ -67,7 +68,7 @@ void AwoxMeshMqtt::publish_connected(int active_connections, int online_devices,
     const std::string message = active_connections > 0 ? "online" : "offline";
     ESP_LOGI(TAG, "Publish mesh connection status: %s", message.c_str());
 
-    global_mqtt_client->publish(global_mqtt_client->get_topic_prefix() + "/connected", message, 0, true);
+    //global_mqtt_client->publish(global_mqtt_client->get_topic_prefix() + "/connected", message, 0, true);
   }
 
   if (this->last_published_active_connections_ == active_connections &&
@@ -79,8 +80,8 @@ void AwoxMeshMqtt::publish_connected(int active_connections, int online_devices,
 
   this->last_published_online_devices_ = online_devices;
   this->last_published_active_connections_ = active_connections;
-
-  global_mqtt_client->publish_json(
+// =============================== CIEKAWE 
+  /*global_mqtt_client->publish_json(
       global_mqtt_client->get_topic_prefix() + "/connection_status",
       [&](JsonObject root) {
         root["active_connections"] = active_connections;
@@ -99,7 +100,7 @@ void AwoxMeshMqtt::publish_connected(int active_connections, int online_devices,
           connection["mesh_ids"] = mesh_ids.str().substr(0, mesh_ids.str().size() - 2);
         }
       },
-      0, false);
+      0, false);*/
 }
 
 void AwoxMeshMqtt::publish_availability(Device *device) {
@@ -111,7 +112,7 @@ void AwoxMeshMqtt::publish_availability(Device *device) {
 
   const std::string message = device->online ? "online" : "offline";
   ESP_LOGI(TAG, "Publish online/offline for device %u - %s", device->mesh_id, message.c_str());
-  global_mqtt_client->publish(this->get_mqtt_topic_for_(device, "availability"), message, 0, true);
+  //global_mqtt_client->publish(this->get_mqtt_topic_for_(device, "availability"), message, 0, true);
 }
 
 void AwoxMeshMqtt::publish_availability(Group *group) {
@@ -123,7 +124,7 @@ void AwoxMeshMqtt::publish_availability(Group *group) {
 
   const std::string message = group->online ? "online" : "offline";
   ESP_LOGI(TAG, "Publish online/offline for group %u - %s", group->group_id, message.c_str());
-  global_mqtt_client->publish(this->get_mqtt_topic_for_(group, "availability"), message, 0, true);
+  //global_mqtt_client->publish(this->get_mqtt_topic_for_(group, "availability"), message, 0, true);
 }
 
 void AwoxMeshMqtt::publish_state(MeshDestination *mesh_destination) {
@@ -145,7 +146,8 @@ void AwoxMeshMqtt::publish_state(MeshDestination *mesh_destination) {
   ESP_LOGD(TAG, "Publish state for %s", mesh_destination->state_as_string().c_str());
 
   if (mesh_destination->device_info->has_feature(FEATURE_LIGHT_MODE)) {
-    global_mqtt_client->publish_json(
+  // ============================= publish light state ciekawe
+    /*global_mqtt_client->publish_json(
         this->get_mqtt_topic_for_(mesh_destination, "state"),
         [this, mesh_destination](JsonObject root) {
           root["state"] = mesh_destination->state ? "ON" : "OFF";
@@ -180,19 +182,19 @@ void AwoxMeshMqtt::publish_state(MeshDestination *mesh_destination) {
           color["g"] = mesh_destination->G;
           color["b"] = mesh_destination->B;
         },
-        0, true);
+        0, true);*/
   } else {
-    global_mqtt_client->publish(this->get_mqtt_topic_for_(mesh_destination, "state"),
-                                mesh_destination->state ? "ON" : "OFF", mesh_destination->state ? 2 : 3, 0, true);
+    //global_mqtt_client->publish(this->get_mqtt_topic_for_(mesh_destination, "state"),
+    //                            mesh_destination->state ? "ON" : "OFF", mesh_destination->state ? 2 : 3, 0, true);
   }
 }
 
 void AwoxMeshMqtt::publish_connection_sensor_discovery(const std::vector<MeshConnection *> &connections) {
-  const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
+  //const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
   const std::string sanitized_name = str_sanitize(App.get_name());
 
   for (int i = 0; i < connections.size(); i++) {
-    global_mqtt_client->publish_json(
+    /*global_mqtt_client->publish_json(
         discovery_info.prefix + "/sensor/" + sanitized_name + "/connection-" + std::to_string(i) + "-devices/config",
         [this, i, discovery_info](JsonObject root) {
           // Entity
@@ -212,9 +214,9 @@ void AwoxMeshMqtt::publish_connection_sensor_discovery(const std::vector<MeshCon
           JsonObject device_info = root.createNestedObject(MQTT_DEVICE);
           device_info[MQTT_DEVICE_IDENTIFIERS] = get_mac_address();
         },
-        0, discovery_info.retain);
+        0, discovery_info.retain);*/
 
-    global_mqtt_client->publish_json(
+    /*global_mqtt_client->publish_json(
         discovery_info.prefix + "/sensor/" + sanitized_name + "/connection-" + std::to_string(i) + "-mesh-ids/config",
         [this, i, discovery_info](JsonObject root) {
           // Entity
@@ -234,9 +236,9 @@ void AwoxMeshMqtt::publish_connection_sensor_discovery(const std::vector<MeshCon
           JsonObject device_info = root.createNestedObject(MQTT_DEVICE);
           device_info[MQTT_DEVICE_IDENTIFIERS] = get_mac_address();
         },
-        0, discovery_info.retain);
+        0, discovery_info.retain);*/
 
-    global_mqtt_client->publish_json(
+    /*global_mqtt_client->publish_json(
         discovery_info.prefix + "/sensor/" + sanitized_name + "/connection-" + std::to_string(i) + "-mesh-id/config",
         [this, i, discovery_info](JsonObject root) {
           // Entity
@@ -303,7 +305,7 @@ void AwoxMeshMqtt::publish_connection_sensor_discovery(const std::vector<MeshCon
           JsonObject device_info = root.createNestedObject(MQTT_DEVICE);
           device_info[MQTT_DEVICE_IDENTIFIERS] = get_mac_address();
         },
-        0, discovery_info.retain);
+        0, discovery_info.retain);*/
   }
 }
 
@@ -318,9 +320,9 @@ void AwoxMeshMqtt::send_discovery(Device *device) {
            device->device_info->get_product_id(), device->device_info->get_name(), device->device_info->get_model(),
            device->address_str().c_str());
 
-  const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
+  //const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
 
-  global_mqtt_client->publish_json(
+  /*global_mqtt_client->publish_json(
       this->get_discovery_topic_(discovery_info, device),
       [this, device, discovery_info](JsonObject root) {
         root["schema"] = "json";
@@ -401,14 +403,14 @@ void AwoxMeshMqtt::send_discovery(Device *device) {
         device_info["via_device"] = get_mac_address();
         device_info["serial_number"] = "mesh-id " + std::to_string(device->mesh_id);
       },
-      0, discovery_info.retain);
+      0, discovery_info.retain);*/
 
   if (device->device_info->has_feature(FEATURE_LIGHT_MODE)) {
-    global_mqtt_client->subscribe_json(
+    /*global_mqtt_client->subscribe_json(
         this->get_mqtt_topic_for_(device, "command"),
-        [this, device](const std::string &topic, JsonObject root) { this->process_incomming_command(device, root); });
+        [this, device](const std::string &topic, JsonObject root) { this->process_incomming_command(device, root); });*/
   } else {
-    global_mqtt_client->subscribe(this->get_mqtt_topic_for_(device, "command"),
+    /*global_mqtt_client->subscribe(this->get_mqtt_topic_for_(device, "command"),
                                   [this, device](const std::string &topic, const std::string &payload) {
                                     ESP_LOGI(TAG, "command %s - %s", topic.c_str(), payload.c_str());
                                     auto val = parse_on_off(payload.c_str());
@@ -428,7 +430,7 @@ void AwoxMeshMqtt::send_discovery(Device *device) {
                                       case PARSE_NONE:
                                         break;
                                     }
-                                  });
+                                  });*/
   }
   this->publish_availability(device);
 }
@@ -440,9 +442,9 @@ void AwoxMeshMqtt::send_group_discovery(Group *group) {
     return;
   }
 
-  const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
+  //const MQTTDiscoveryInfo &discovery_info = global_mqtt_client->get_discovery_info();
 
-  global_mqtt_client->publish_json(
+  /*global_mqtt_client->publish_json(
       discovery_info.prefix + "/" + group->device_info->get_component_type() + "/group-" +
           std::to_string(group->group_id) + "/config",
       [this, group, discovery_info](JsonObject root) {
@@ -517,19 +519,19 @@ void AwoxMeshMqtt::send_group_discovery(Group *group) {
         device_info["via_device"] = get_mac_address();
         device_info["serial_number"] = "group-id " + std::to_string(group->group_id);
       },
-      0, discovery_info.retain);
+      0, discovery_info.retain);*/
 
   if (group->device_info->has_feature(FEATURE_LIGHT_MODE)) {
-    global_mqtt_client->subscribe_json(
+    /*global_mqtt_client->subscribe_json(
         this->get_mqtt_topic_for_(group, "command"),
-        [this, group](const std::string &topic, JsonObject root) { this->process_incomming_command(group, root); });
+        [this, group](const std::string &topic, JsonObject root) { this->process_incomming_command(group, root); });*/
   } else {
     ESP_LOGE(TAG, "Non light group isn't supported currently");
   }
   this->publish_availability(group);
 }
 
-void AwoxMeshMqtt::process_incomming_command(MeshDestination *mesh_destination, JsonObject root) {
+/*void AwoxMeshMqtt::process_incomming_command(MeshDestination *mesh_destination, JsonObject root) {
   int dest = mesh_destination->dest();
   bool state_set = false;
 
@@ -638,7 +640,7 @@ void AwoxMeshMqtt::process_incomming_command(MeshDestination *mesh_destination, 
   }
 
   this->publish_state(mesh_destination);
-}
+}*/
 
 }  // namespace awox_mesh
 }  // namespace esphome

@@ -6,7 +6,7 @@ from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.const import CONF_ID
 
 AUTO_LOAD = ["esp32_ble_client", "esp32_ble_tracker"]
-DEPENDENCIES = ["mqtt", "esp32"]
+DEPENDENCIES = ["esp32"]
 
 awox_ns = cg.esphome_ns.namespace("awox_mesh")
 
